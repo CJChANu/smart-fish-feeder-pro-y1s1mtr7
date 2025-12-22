@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "541255520514",
+    "firebase_url": "https://smart-fish-feeder-pro-y1s1mtr7-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "smart-fish-feeder-pro-y1s1mtr7",
+    "storage_bucket": "smart-fish-feeder-pro-y1s1mtr7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:541255520514:android:1a58c49053a5ba63f6b21b",
+        "android_client_info": {
+          "package_name": "com.y1s1mtr7.smartfishfeeder.smart_fish_feeder_pro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADPE5nc5Ug9l7f8ZAIKnzrmjWtff2QeDA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
