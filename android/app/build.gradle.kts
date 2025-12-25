@@ -10,7 +10,10 @@ plugins {
 
 android {
     namespace = "com.y1s1mtr7.smartfishfeeder.smart_fish_feeder_pro"
-    compileSdk = flutter.compileSdkVersion
+
+    // Force stable SDK + build tools
+    compileSdk = 34
+    buildToolsVersion = "34.0.0"
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -23,20 +26,21 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.y1s1mtr7.smartfishfeeder.smart_fish_feeder_pro"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        targetSdk = 34  // override to match compileSdk
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
     buildTypes {
-        release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+        getByName("release") {
+            // Signing with debug config so `flutter run --release` works
+            signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+        getByName("debug") {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
