@@ -1,0 +1,42 @@
+{
+  "devices": {
+    "fish_feeder_001": {
+      "status": {
+        "temperature": 26.8,
+        "foodLevel": "ok",
+        "clarity": 92,
+        "online": true,
+        "lastPing": "2025-12-31T09:00:00Z"
+      },
+      "commands": {
+        "feedNow": false
+      },
+      "schedule": {
+        "feeding_times": [
+          "08:00",
+          "12:00",
+          "18:00"
+        ]
+      },
+      "history": {
+        "2025-12-31T08:00:00Z": {
+          "amount": 5.2,
+          "success": true,
+          "timestamp": "2025-12-31T08:00:15Z"
+        },
+        "2025-12-31T07:00:00Z": {
+          "amount": 5.0,
+          "success": true,
+          "timestamp": "2025-12-31T07:00:12Z"
+        }
+      },
+      "alerts": {
+        "low_food_2025-12-30": {
+          "message": "Low food level detected",
+          "timestamp": "2025-12-30T20:15:00Z",
+          "resolved": false
+        }
+      }
+    }
+  }
+}

@@ -44,6 +44,23 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("keystore.jks")
+            storePassword = "your_keystore_password"
+            keyAlias = "your_key_alias"
+            keyPassword = "your_key_password"
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            signingConfig = signingConfigs.getByName("release")
+        }
+    }
+
 }
 
 flutter {

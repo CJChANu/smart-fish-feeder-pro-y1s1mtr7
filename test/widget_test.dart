@@ -7,24 +7,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:smart_fish_feeder_pro/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('App shows dashboard and Feed button', (WidgetTester tester) async {
+    WidgetsFlutterBinding.ensureInitialized();
+
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
-
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
-
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpWidget(ProviderScope(child: MyApp()));
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify AppBar is present (app shows dashboard).
+    expect(find.byType(AppBar), findsOneWidget);
+
+    // Verify "FEED NOW" button exists on the dashboard
+    expect(find.text('FEED NOW'), findsOneWidget);
   });
 }

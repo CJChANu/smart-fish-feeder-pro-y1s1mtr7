@@ -1,36 +1,45 @@
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/services/firebase_service.dart';
+import '../history/history_screen.dart';
 
-class DashboardScreen extends ConsumerWidget {
-  const DashboardScreen({super.key});
+class DashboardScreen extends StatefulWidget {
+  final String? deviceId;
+  const DashboardScreen({super.key, this.deviceId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final deviceId = AppConstants.deviceId;
-    
+  _DashboardScreenState createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Fish Feeder Pro', style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+        title: Text(AppConstants.appName, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.white,
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => HistoryScreen())),
+          )
+        ],
       ),
-      body: StreamBuilder<DatabaseEvent>(
-        stream: FirebaseService().streamDeviceStatus(deviceId),
+      body: StreamBuilder<DatabaseEvent?>(
+        stream: FirebaseService().isInitialized ? FirebaseService().streamStatus() : Stream.value(null),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
-            return Center(child: Text('Connection Error: ${snapshot.error}'));
+            return Center(child: Text('Error: ${snapshot.error}'));
           }
-          
-          if (!snapshot.hasData) {
-            return Center(child: CircularProgressIndicator());
-          }
-          
-          final data = snapshot.data!.snapshot.value as Map<dynamic, dynamic>? ?? {};
+
+          // Allow the UI to render even when there's no data yet (e.g., tests / offline)
+          final data = (snapshot.hasData && snapshot.data?.snapshot.value != null)
+              ? snapshot.data!.snapshot.value as Map<dynamic, dynamic>
+              : <dynamic, dynamic>{};
           
           return Padding(
             padding: EdgeInsets.all(20.w),
@@ -43,10 +52,12 @@ class DashboardScreen extends ConsumerWidget {
                     crossAxisSpacing: 16.w,
                     mainAxisSpacing: 16.h,
                     children: [
-                      _buildStatusCard('Temperature', '${data['temperature']?.toString() ?? 'N/A'}°C', Icons.thermostat),
-                      _buildStatusCard('Food Level', data['foodLevel'] == 'low' ? 'LOW' : 'OK', Icons.inventory_2),
+                      _buildStatusCard('Temperature', '${data['temperature']?.toStringAsFixed(1) ?? 'N/A'}°C', Icons.thermostat),
+                      _buildStatusCard('Food Level', data['foodLevel']?.toString() ?? 'N/A', Icons.inventory_2, 
+                          data['foodLevel'] == 'low' ? Colors.orange : Colors.green),
                       _buildStatusCard('Water Clarity', '${data['clarity']?.toString() ?? 'N/A'}%', Icons.water_drop),
-                      _buildStatusCard('Last Feed', data['lastFeeding']?.toString() ?? 'Never', Icons.access_time),
+                      _buildStatusCard('Device', data['online'] == true ? 'Online' : 'Offline', Icons.wifi,
+                          data['online'] == true ? Colors.green : Colors.red),
                     ],
                   ),
                 ),
@@ -54,13 +65,15 @@ class DashboardScreen extends ConsumerWidget {
                 SizedBox(
                   width: double.infinity,
                   height: 60.h,
-                  child: ElevatedButton(
-                    onPressed: () => FirebaseService().sendFeedCommand(deviceId),
+                  child: ElevatedButton.icon(
+                    onPressed: FirebaseService().sendFeedCommand,
+                    icon: const Icon(Icons.restaurant_menu, color: Colors.white),
+                    label: const Text('FEED NOW', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF10B981),
+                      backgroundColor: const Color(0xFF10B981),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),
+                      elevation: 4,
                     ),
-                    child: Text('FEED NOW', style: TextStyle(fontSize: 18.sp, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
               ],
@@ -70,19 +83,19 @@ class DashboardScreen extends ConsumerWidget {
       ),
     );
   }
-  
-  Widget _buildStatusCard(String title, String value, IconData icon) {
+
+  Widget _buildStatusCard(String title, String value, IconData icon, [Color? color]) {
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8, offset: Offset(0, 2))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 40.sp, color: Color(0xFF3B82F6)),
+          Icon(icon, size: 40.sp, color: color ?? const Color(0xFF3B82F6)),
           SizedBox(height: 8.h),
           Text(title, style: TextStyle(fontSize: 12.sp, color: Colors.grey[600])),
           Text(value, style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold, color: Colors.black87)),
