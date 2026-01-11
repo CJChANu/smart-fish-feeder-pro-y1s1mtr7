@@ -13,48 +13,30 @@ class DeviceService {
     _dbRef = FirebaseDatabase.instance.ref();
   }
 
+  // The root reference for a specific device, e.g., 'fish_feeder_001'
   DatabaseReference deviceRef(String deviceId) =>
-      (_dbRef ?? FirebaseDatabase.instance.ref()).child('devices/$deviceId');
+      (_dbRef ?? FirebaseDatabase.instance.ref()).child(deviceId);
 
-  // Get user's devices
-  Future<List<String>> getUserDevices(String uid) async {
-    final snapshot = await (_dbRef ?? FirebaseDatabase.instance.ref()).child('users/$uid/devices').get();
-    final raw = snapshot.value;
-    if (snapshot.exists && raw != null) {
-      if (raw is List) return List<String>.from(raw);
-      if (raw is Map) return List<String>.from(raw.keys.map((e) => e.toString()));
-    }
-    return [];
-  }
-
-  // Register new device
-  Future<void> registerDevice(String deviceId, String uid, String name) async {
-    await deviceRef(deviceId).update({
-      'owner': uid,
-      'name': name,
-      'registeredAt': ServerValue.timestamp,
-    });
-    // Add to user devices list
-    await (_dbRef ?? FirebaseDatabase.instance.ref()).child('users/$uid/devices').runTransaction((dynamic mutableData) {
-      if (mutableData == null) return Transaction.abort();
-      final list = (mutableData.value as List?) ?? <dynamic>[];
-      if (!list.contains(deviceId)) list.add(deviceId);
-      mutableData.value = list;
-      return Transaction.success(mutableData);
-    });
-  }
-
-  // Status streams for specific device
-  Stream<DatabaseEvent> streamStatus(String deviceId) =>
-      deviceRef(deviceId).child('status').onValue;
-
+  // Data stream from the device, e.g., 'fish_feeder_001/data'
   Stream<DatabaseEvent> streamHistory(String deviceId) =>
-      deviceRef(deviceId).child('history').limitToLast(20).onValue;
+      deviceRef(deviceId).child('data').limitToLast(1).onValue;
 
-  // Commands
+  Stream<DatabaseEvent> getFullHistory(String deviceId) =>
+      deviceRef(deviceId).child('data').limitToLast(50).onValue;
+
+  // Config stream from the device, e.g., 'fish_feeder_001/config'
+  Stream<DatabaseEvent> streamConfig(String deviceId) =>
+      deviceRef(deviceId).child('config').onValue;
+
+  // Command to trigger manual feeding
+  // Sets 'fish_feeder_001/config/manual_feed' to true
   Future<void> sendFeedCommand(String deviceId) async {
-    await deviceRef(deviceId).child('commands/feedNow').set(true);
-    await Future.delayed(const Duration(seconds: 5));
-    await deviceRef(deviceId).child('commands/feedNow').set(false);
+    await deviceRef(deviceId).child('config/manual_feed').set(true);
+  }
+
+  // Command to set the feeding interval
+  // Sets 'fish_feeder_001/config/feed'
+  Future<void> setFeedInterval(String deviceId, int hours) async {
+    await deviceRef(deviceId).child('config/feed').set(hours);
   }
 }
